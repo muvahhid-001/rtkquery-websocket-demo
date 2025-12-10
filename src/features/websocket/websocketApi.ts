@@ -7,10 +7,7 @@ export const websocketApi = createApi({
   endpoints: (build) => ({
     subscribe: build.query<WSMessage, { url: string } | void>({
       query: () => ({} as any),
-      async onCacheEntryAdded(
-        arg,
-        { updateCachedData, cacheDataLoaded, cacheEntryRemoved, dispatch }
-      ) {
+      async onCacheEntryAdded(arg, { updateCachedData, cacheEntryRemoved }) {
         const url = (arg && (arg as any).url) || "ws://localhost:4000";
 
         let socket: WebSocket | null = null;
@@ -19,52 +16,62 @@ export const websocketApi = createApi({
 
         const connect = () => {
           reconnectAttempt++;
+
           try {
             socket = new WebSocket(url);
           } catch (err) {
-            updateCachedData(
-              () =>
-                ({ type: "error", payload: { message: String(err) } } as any)
-            );
+            updateCachedData((draft) => {
+              Object.assign(draft, {
+                type: "error",
+                payload: { message: String(err) },
+              });
+            });
             return;
           }
 
-          updateCachedData(
-            () =>
-              ({
-                type: "connecting",
-                payload: { attempt: reconnectAttempt },
-              } as any)
-          );
+          updateCachedData((draft) => {
+            Object.assign(draft, {
+              type: "connecting",
+              payload: { attempt: reconnectAttempt, time: Date.now() },
+            });
+          });
 
           socket.addEventListener("open", () => {
             reconnectAttempt = 0;
-            updateCachedData(
-              () => ({ type: "welcome", payload: { time: Date.now() } } as any)
-            );
+            updateCachedData((draft) => {
+              Object.assign(draft, {
+                type: "welcome",
+                payload: { message: "Сервер подключен", time: Date.now() },
+              });
+            });
           });
 
           socket.addEventListener("message", (ev) => {
             try {
               const data = JSON.parse(ev.data);
-              updateCachedData(() => data);
-            } catch (err) {
-              updateCachedData(
-                () =>
-                  ({ type: "error", payload: { message: "bad-json" } } as any)
-              );
+              updateCachedData((draft) => {
+                Object.assign(draft, data);
+              });
+            } catch {
+              updateCachedData((draft) => {
+                Object.assign(draft, {
+                  type: "error",
+                  payload: { message: "Ошибка парсинга сообщения" },
+                });
+              });
             }
           });
 
           socket.addEventListener("close", (evt) => {
-            updateCachedData(
-              () =>
-                ({
-                  type: "closed",
-                  payload: { code: evt.code, reason: evt.reason },
-                } as any)
-            );
+            updateCachedData((draft) => {
+              Object.assign(draft, {
+                type: "closed",
+                payload: { code: evt.code, reason: evt.reason },
+              });
+            });
+
             socket = null;
+
             if (!manualClose) {
               const timeout = Math.min(
                 30000,
@@ -74,11 +81,13 @@ export const websocketApi = createApi({
             }
           });
 
-          socket.addEventListener("error", (e) => {
-            updateCachedData(
-              () =>
-                ({ type: "error", payload: { message: "socket-error" } } as any)
-            );
+          socket.addEventListener("error", () => {
+            updateCachedData((draft) => {
+              Object.assign(draft, {
+                type: "error",
+                payload: { message: "Ошибка сокета" },
+              });
+            });
           });
         };
 
@@ -86,8 +95,9 @@ export const websocketApi = createApi({
 
         const controller = {
           send: (d: any) => {
-            if (socket && socket.readyState === WebSocket.OPEN)
+            if (socket && socket.readyState === WebSocket.OPEN) {
               socket.send(JSON.stringify(d));
+            }
           },
           close: () => {
             manualClose = true;
@@ -96,7 +106,6 @@ export const websocketApi = createApi({
         };
 
         await cacheEntryRemoved;
-
         controller.close();
       },
     }),

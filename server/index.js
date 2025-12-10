@@ -1,7 +1,7 @@
 const WebSocket = require("ws");
 const wss = new WebSocket.Server({ port: 4000 });
 
-console.log("WebSocket server listening on ws://localhost:4000");
+console.log("WebSocket сервер слушает ws://localhost:4000");
 
 let clientId = 0;
 
@@ -14,7 +14,7 @@ function broadcast(data) {
 
 wss.on("connection", (ws) => {
   const id = ++clientId;
-  console.log("client connected", id);
+  console.log("Клиент подключился", id);
 
   ws.send(
     JSON.stringify({
@@ -45,18 +45,12 @@ wss.on("connection", (ws) => {
         });
       }
     } catch (err) {
-      console.log("bad message", err);
+      console.log("Некорректное сообщение", err);
     }
   });
 
   ws.on("close", () => {
-    console.log("client disconnected", id);
+    console.log("Клиент отключился", id);
     clearInterval(interval);
   });
-
-  // Для демонстрации: закрыть соединение через 30 секунд
-  setTimeout(() => {
-    if (ws.readyState === WebSocket.OPEN)
-      ws.close(1011, "server-simulated-shutdown");
-  }, 15000);
 });

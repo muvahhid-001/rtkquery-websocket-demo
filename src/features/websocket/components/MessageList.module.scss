@@ -1,0 +1,23 @@
+.card {
+  margin-top: 12px;
+  padding: 16px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.messages {
+  max-height: 320px;
+  overflow: auto;
+}
+
+.message {
+  padding: 8px;
+  margin-bottom: 6px;
+  background-color: #f8f8f8;
+  border-radius: 6px;
+}
+
+.empty {
+  opacity: 0.6;
+}

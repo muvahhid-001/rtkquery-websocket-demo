@@ -1,0 +1,39 @@
+body {
+  font-family: Inter, system-ui, sans-serif;
+  margin: 0;
+  padding: 16px;
+  background: #f6f8fa;
+}
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+.card {
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  width: 470px;
+}
+.status {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.message {
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  background: #f1f5f9;
+}
+.message .meta {
+  opacity: 0.6;
+  font-size: 12px;
+}
+li {
+  margin-bottom: 12px;
+}
+textarea {
+  width: 100%;
+  min-height: 64px;
+}
